@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt per una didattica inclusiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: intestazione compatta, formula del prompt, barra filtri fissa, tabella che diventa schede su telefono.
+   Corpo in Atkinson Hyperlegible, carattere progettato per l'alta leggibilità. */
+:root{
+  --bg:#f4f6f9;
+  --surface:#ffffff;
+  --ink:#16213a;
+  --muted:#5a6580;
+  --line:#dde2ec;
+  --accent:#2747c9;
+  --accent-soft:#e6ebfb;
+  --inf:#c98a00; --inf-soft:#fff3d4;
+  --pri:#0f8a6c; --pri-soft:#dcf4ec;
+  --sec:#7a3fc8; --sec-soft:#efe5fb;
+  --ph:#b54708; --ph-soft:#fdecdc;
+  --code:#f7f8fb;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Verdana", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1422; --surface:#171e31; --ink:#e7ebf5; --muted:#9aa5bf; --line:#2a3350;
+    --accent:#8ea4ff; --accent-soft:#1f2a4d;
+    --inf:#f2bf45; --inf-soft:#3a2f12; --pri:#4fd1a8; --pri-soft:#123a30; --sec:#bf97f5; --sec-soft:#2e2048;
+    --ph:#ffad6b; --ph-soft:#3d2614; --code:#121829;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1422; --surface:#171e31; --ink:#e7ebf5; --muted:#9aa5bf; --line:#2a3350;
+  --accent:#8ea4ff; --accent-soft:#1f2a4d;
+  --inf:#f2bf45; --inf-soft:#3a2f12; --pri:#4fd1a8; --pri-soft:#123a30; --sec:#bf97f5; --sec-soft:#2e2048;
+  --ph:#ffad6b; --ph-soft:#3d2614; --code:#121829;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1320px;margin:0 auto;padding:0 20px}
+header{padding:40px 0 24px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,4.4vw,3.2rem);line-height:1.05;margin:.3em 0 .35em;text-wrap:balance;letter-spacing:-.01em}
+.lead{max-width:68ch;color:var(--muted);font-size:1.05rem;margin:0}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.stat{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 8px;font-size:.92rem}
+.stat b{font-family:var(--display);font-variant-numeric:tabular-nums;font-size:1.05rem}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.dot.i{background:var(--inf)} .dot.p{background:var(--pri)} .dot.s{background:var(--sec)} .dot.t{background:var(--accent)}
+
+.formula{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:8px 0 18px}
+.formula div{padding:14px 16px;border-right:1px solid var(--line)}
+.formula div:last-child{border-right:0}
+.formula .n{font-family:var(--display);font-weight:800;color:var(--accent);font-size:.85rem}
+.formula .k{font-family:var(--display);font-weight:700;font-size:1.05rem;display:block}
+.formula small{color:var(--muted);font-size:.86rem;display:block;line-height:1.4}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+.note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px 16px;font-size:.93rem}
+.note.warn{border-left-color:var(--ph)}
+.note strong{font-family:var(--display)}
+.ph{background:var(--ph-soft);color:var(--ph);border-radius:4px;padding:0 3px;font-weight:700;white-space:normal}
+
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 0}
+.bar .wrap{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lbl{font-family:var(--display);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:64px}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip.lv-i[aria-pressed="true"]{background:var(--inf);border-color:var(--inf);color:#1a1300}
+.chip.lv-p[aria-pressed="true"]{background:var(--pri);border-color:var(--pri);color:#fff}
+.chip.lv-s[aria-pressed="true"]{background:var(--sec);border-color:var(--sec);color:#fff}
+.search{flex:1;min-width:200px;display:flex;gap:8px;align-items:center}
+#q{flex:1;font:inherit;padding:7px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.count{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.tablewrap{margin:22px 0 40px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-family:var(--display);font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 16px;background:var(--code);border-bottom:1px solid var(--line)}
+tbody td{padding:18px 16px;vertical-align:top;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:var(--display);font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;width:44px}
+td.area{width:200px}
+.areaname{font-family:var(--display);font-weight:700;font-size:1.02rem;display:block;margin-bottom:6px}
+.levels{display:flex;gap:4px;flex-wrap:wrap}
+.lv{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.02em}
+.lv.i{background:var(--inf-soft);color:var(--inf)} .lv.p{background:var(--pri-soft);color:var(--pri)} .lv.s{background:var(--sec-soft);color:var(--sec)}
+td.goal{width:220px}
+.goal h3{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.25;margin:0 0 6px;text-wrap:balance}
+.goal p{margin:0;color:var(--muted);font-size:.9rem}
+.promptbox{position:relative;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 16px;font-size:.93rem;line-height:1.6;white-space:pre-wrap;max-width:72ch}
+.copy{font:inherit;font-size:.82rem;font-weight:700;margin-top:8px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:8px;padding:5px 12px;cursor:pointer}
+.copy:hover{background:var(--accent-soft)}
+.copy.done{background:var(--pri);border-color:var(--pri);color:#fff}
+td.tip{width:240px;font-size:.9rem}
+.tip .t{display:block;font-family:var(--display);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--pri);margin-bottom:4px}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+
+section.boost{margin:0 0 56px}
+h2{font-family:var(--display);font-weight:800;font-size:1.6rem;margin:0 0 6px;text-wrap:balance}
+.boost p.sub{color:var(--muted);margin:0 0 16px;max-width:68ch}
+.boostgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.bcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.bcard b{font-family:var(--display);font-size:.98rem}
+.bcard span{font-size:.9rem;color:var(--muted)}
+.bcard .copy{align-self:flex-start;margin-top:auto}
+footer{color:var(--muted);font-size:.85rem;padding:0 0 40px}
+footer p{margin:0 0 18px}
+.brand{display:flex;align-items:flex-start;gap:18px}
+.brand img{border-radius:50%;flex:none;margin-top:6px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.credit{display:flex;align-items:center;gap:14px;border-top:1px solid var(--line);padding-top:18px;color:var(--ink);font-size:.95rem}
+.credit img{border-radius:50%}
+.credit small{color:var(--muted)}
+@media (max-width:560px){.brand{flex-direction:column;gap:8px}}
+
+@media (max-width:980px){
+  .formula{grid-template-columns:1fr 1fr}
+  .formula div{border-bottom:1px solid var(--line)}
+  .notes{grid-template-columns:1fr}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%!important}
+  tbody tr{border-bottom:1px solid var(--line);padding:6px 0}
+  tbody td{border:0;padding:8px 16px}
+  td.num{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="brand"><img src="logo.png" alt="Logo di Wanda Trunfio" width="84" height="84"><div>
+  <div class="eyebrow">Infanzia · Primaria · Secondaria di primo grado</div>
+  <h1>Prompt per lezioni e UdA inclusive e personalizzate</h1></div></div>
+  <p class="lead">Una raccolta di prompt pronti da copiare in un assistente di intelligenza artificiale per progettare lezioni, unità di apprendimento, testi livellati e materiali che tengano dentro tutta la classe. Sostituisci le parti <span class="ph">[TRA PARENTESI]</span> con i dati della tua classe.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div class="wrap">
+  <div class="formula" aria-label="Struttura di un prompt efficace">
+    <div><span class="n">1</span><span class="k">Ruolo</span><small>«Agisci come docente esperto di…»</small></div>
+    <div><span class="n">2</span><span class="k">Contesto</span><small>Classe, età, bisogni, prerequisiti, tempi</small></div>
+    <div><span class="n">3</span><span class="k">Obiettivo</span><small>Cosa devono saper fare gli alunni alla fine</small></div>
+    <div><span class="n">4</span><span class="k">Vincoli</span><small>Lessico, lunghezza, misure compensative, livelli</small></div>
+    <div><span class="n">5</span><span class="k">Formato</span><small>Tabella, scheda, griglia, passaggi numerati</small></div>
+  </div>
+  <div class="notes">
+    <div class="note"><strong>Come descrivere la classe.</strong> Indica i bisogni in modo funzionale e anonimo, per esempio: «3 alunni con difficoltà di decodifica, 1 alunno neoarrivato con italiano livello A1, 2 alunni che terminano in anticipo e cercano sfide». Il materiale sarà più mirato di quello ottenuto con un'etichetta diagnostica.</div>
+    <div class="note warn"><strong>Privacy e controllo.</strong> Non inserire nomi, diagnosi, certificazioni o dati riconducibili agli alunni. Rileggi sempre contenuti, date e dati prodotti dall'IA prima di usarli in classe: il controllo didattico resta tuo.</div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="row" role="group" aria-label="Filtra per ordine di scuola">
+      <span class="lbl">Scuola</span>
+      <button class="chip" data-lv="all" aria-pressed="true">Tutte</button>
+      <button class="chip lv-i" data-lv="i" aria-pressed="false">Infanzia</button>
+      <button class="chip lv-p" data-lv="p" aria-pressed="false">Primaria</button>
+      <button class="chip lv-s" data-lv="s" aria-pressed="false">Secondaria I grado</button>
+      <div class="search">
+        <label for="q" class="lbl" style="min-width:auto">Cerca</label>
+        <input id="q" type="search" placeholder="es. frazioni, DSA, Scratch, Leopardi…">
+      </div>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <div class="row" role="group" aria-label="Filtra per area" id="areas"><span class="lbl">Area</span></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>Area e scuola</th><th>Per fare cosa</th><th>Prompt da copiare</th><th>Per includere tutti</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>Nessun prompt corrisponde ai filtri. Prova a togliere un filtro o a cambiare parola.</div>
+  </div>
+
+  <section class="boost">
+    <h2>Richieste di rilancio</h2>
+    <p class="sub">Da incollare dopo la prima risposta, per adattare il materiale senza ricominciare da capo.</p>
+    <div class="boostgrid" id="boost"></div>
+  </section>
+</main>
+<footer class="wrap">
+  <p>I prompt sono modelli: adattali alla progettazione d'istituto, al curricolo verticale, ai PEI e ai PDP e alla scala di valutazione in uso nella tua scuola.</p>
+  <div class="credit"><img src="logo.png" alt="" width="56" height="56"><span>Creato da <strong>Wanda Trunfio</strong><br><small>Innovazione didattica e intelligenza artificiale</small></span></div>
+</footer>
+
+<script>
+const P = [
+/* ===== PROGETTAZIONE E INCLUSIONE (trasversali) ===== */
+{a:"Progettazione UdA",l:["i","p","s"],t:"Progettare un'UdA completa e inclusiva",d:"Struttura pronta per la programmazione, con differenziazione già prevista.",
+p:`Agisci come esperto di progettazione didattica e di Universal Design for Learning (UDL).
+Progetta un'Unità di Apprendimento per [ORDINE DI SCUOLA E CLASSE] su [ARGOMENTO], durata [N. SETTIMANE / ORE].
+Contesto della classe: [N. ALUNNI], [DESCRIZIONE ANONIMA DEI BISOGNI: es. 2 alunni con difficoltà di lettura, 1 alunno neoarrivato livello A1, 1 alunno con difficoltà di attenzione, 3 alunni ad alto potenziale].
+Includi in una tabella:
+1. Titolo, competenze chiave europee e traguardi delle Indicazioni Nazionali coinvolti
+2. Obiettivi di apprendimento osservabili
+3. Prerequisiti e attività di attivazione delle preconoscenze
+4. Fasi con tempi, attività, metodologie (cooperative learning, peer tutoring, didattica laboratoriale)
+5. Per ogni fase, tre canali UDL: modi diversi di presentare i contenuti, di esprimere ciò che si è imparato, di coinvolgere e motivare
+6. Adattamenti per ciascun bisogno indicato e attività di potenziamento
+7. Compito di realtà finale
+8. Valutazione: osservazioni in itinere, autovalutazione, rubrica.`,
+tip:"Chiedi poi «Trasforma la fase 3 in una lezione di 60 minuti minuto per minuto» per passare dalla progettazione all'aula."},
+
+{a:"Progettazione UdA",l:["p","s"],t:"Compito di realtà con ruoli",d:"Un problema autentico che dà a ogni alunno un ruolo alla sua portata.",
+p:`Agisci come docente esperto di didattica per competenze.
+Crea un compito di realtà per [CLASSE] che concluda un percorso su [ARGOMENTO / DISCIPLINE COINVOLTE].
+Requisiti:
+- una situazione autentica e vicina agli alunni (es. il comune chiede una proposta, una guida per i turisti, una mostra per i genitori)
+- un prodotto finale concreto
+- lavoro in gruppi da [N] con ruoli definiti (es. ricercatore, grafico, portavoce, controllore dei tempi), ciascuno descritto con compiti chiari
+- consegna scritta in linguaggio semplice, con passaggi numerati e una checklist per il gruppo
+- versione della consegna con supporti visivi per [BISOGNI SPECIFICI]
+- rubrica di valutazione con 4 livelli su processo, prodotto e collaborazione
+- scheda di autovalutazione individuale.`,
+tip:"Assegna i ruoli in base ai punti di forza: un alunno con difficoltà di scrittura può guidare la parte grafica o l'esposizione orale."},
+
+{a:"Inclusione e valutazione",l:["p","s"],t:"Tre percorsi a livelli sullo stesso obiettivo",d:"Differenziazione senza separare la classe.",
+p:`Agisci come esperto di didattica differenziata.
+Per [CLASSE], sull'obiettivo «[OBIETTIVO DI APPRENDIMENTO]», prepara tre percorsi paralleli che portano tutti allo stesso traguardo:
+- Percorso BASE: passi brevi, esempi svolti, supporti visivi, lessico essenziale
+- Percorso INTERMEDIO: attività standard con qualche aiuto a richiesta
+- Percorso AVANZATO: approfondimento, problemi aperti, collegamenti interdisciplinari
+Per ogni percorso indica: attività, materiali, tempo stimato, domanda di verifica finale comune.
+Aggiungi un momento finale in cui i tre gruppi condividono ciò che hanno scoperto, così che ognuno contribuisca al lavoro di tutti.
+Usa nomi neutri per i percorsi (es. colori o nomi di pianeti), non etichette di livello.`,
+tip:"I nomi neutri evitano lo stigma; lascia che gli alunni possano cambiare percorso durante il lavoro."},
+
+{a:"Inclusione e valutazione",l:["p","s"],t:"Adattare una verifica con misure compensative",d:"Stessi obiettivi, accesso diverso.",
+p:`Agisci come docente specializzato in disturbi specifici dell'apprendimento.
+Ecco una verifica di [DISCIPLINA] per [CLASSE]:
+[INCOLLA IL TESTO DELLA VERIFICA]
+Creane una versione adattata che mantenga gli stessi obiettivi di apprendimento, applicando:
+- consegne brevi, una richiesta per frase, parole chiave in grassetto
+- carattere senza grazie, interlinea ampia, testo allineato a sinistra (indicalo come istruzione di impaginazione)
+- riduzione quantitativa degli esercizi, non qualitativa
+- domande a scelta multipla o completamento al posto di risposte aperte lunghe dove possibile
+- esempi svolti all'inizio di ogni esercizio
+- spazio per formulari, tabelle o mappe consentite
+Alla fine elenca le modifiche fatte e il motivo di ciascuna, per poterle riportare nel PDP.`,
+tip:"Mantieni la stessa grafica della verifica della classe: l'alunno non deve sentirsi con «la verifica diversa»."},
+
+{a:"Inclusione e valutazione",l:["i","p","s"],t:"Rubrica valutativa descrittiva",d:"Criteri chiari da condividere anche con gli alunni.",
+p:`Agisci come esperto di valutazione formativa.
+Crea una rubrica per valutare [PRODOTTO O COMPETENZA: es. esposizione orale di storia, testo narrativo, risoluzione di problemi] in [CLASSE].
+- Usa la scala in uso nella mia scuola: [SCALA DI VALUTAZIONE: es. giudizi sintetici, livelli, voti in decimi]
+- 4-5 criteri osservabili
+- descrittori concreti per ogni livello, formulati in positivo (cosa l'alunno sa fare)
+- una versione semplificata della rubrica rivolta agli alunni, con frasi in prima persona («So…», «Riesco a…») e simboli
+- tre domande di autovalutazione finale.`,
+tip:"Consegna la versione per alunni prima del lavoro: sapere cosa ci si aspetta riduce l'ansia e aiuta chi ha difficoltà di pianificazione."},
+
+{a:"Inclusione e valutazione",l:["p","s"],t:"Materiali per alunni neoarrivati (italiano L2)",d:"Contenuti disciplinari accessibili a chi sta imparando l'italiano.",
+p:`Agisci come docente esperto di italiano L2 e di lingua per lo studio.
+Ho un alunno neoarrivato con livello di italiano [LIVELLO QCER: es. A1/A2], lingua madre [LINGUA]. La classe studia [ARGOMENTO] in [DISCIPLINA].
+Prepara:
+1. un testo semplificato (frasi brevi, presente indicativo, soggetto esplicito, una informazione per frase) di massimo [N] parole
+2. un glossario visivo delle 10 parole chiave, con descrizione dell'immagine da associare e traduzione in [LINGUA]
+3. 5 esercizi graduati: abbinamento parola-immagine, vero/falso, completamento, riordino di frasi, una domanda aperta guidata
+4. 3 frasi modello che l'alunno può usare per partecipare alla lezione con la classe (es. «Io penso che…», «Nella foto vedo…»).`,
+tip:"Verifica la traduzione con un mediatore o una famiglia della stessa lingua quando possibile."},
+
+/* ===== INFANZIA ===== */
+{a:"Campi d'esperienza",l:["i"],t:"Percorso con personaggio guida",d:"Un filo narrativo che lega le attività della settimana.",
+p:`Agisci come insegnante esperta di scuola dell'infanzia.
+Crea un percorso di [N] incontri per bambini di [3/4/5] anni sul tema [TEMA: es. le stagioni, le emozioni, l'acqua], guidato da un personaggio inventato (descrivilo).
+Per ogni incontro indica:
+- campo d'esperienza prevalente e traguardo collegato
+- momento del cerchio con la storia del personaggio (testo breve da leggere ad alta voce)
+- attività corporea, attività manipolativa o grafica, gioco di gruppo
+- materiali di uso comune
+- cosa osservare nei bambini
+Includi varianti per bambini che non parlano ancora l'italiano, per bambini con difficoltà motorie e per bambini che hanno bisogno di tempi più distesi.`,
+tip:"Il personaggio può diventare un pupazzo reale in sezione: dà continuità e sicurezza ai bambini più timidi."},
+
+{a:"Campi d'esperienza",l:["i","p"],t:"Storia sociale per una routine",d:"Prevedibilità per chi fatica con i cambiamenti.",
+p:`Agisci come esperto di didattica inclusiva per bambini con bisogni comunicativi.
+Scrivi una storia sociale per un bambino di [ETÀ] anni che ha difficoltà con [SITUAZIONE: es. il momento della mensa, l'uscita in giardino, l'arrivo di un supplente].
+Regole:
+- frasi brevissime in prima persona, al presente
+- 6-10 pagine, una frase per pagina
+- frasi descrittive e frasi che rassicurano, poche frasi che suggeriscono cosa fare
+- per ogni pagina descrivi un'immagine semplice da disegnare o da cercare tra i simboli CAA
+- tono positivo, nessuna minaccia o divieto.`,
+tip:"Leggila con il bambino più volte prima della situazione, non solo quando il problema si presenta."},
+
+{a:"Campi d'esperienza",l:["i"],t:"Giochi di consapevolezza fonologica",d:"Prerequisiti della letto-scrittura in forma di gioco.",
+p:`Agisci come logopedista ed educatrice di scuola dell'infanzia.
+Proponi 10 giochi per bambini di 5 anni per sviluppare la consapevolezza fonologica, in ordine di difficoltà:
+rime, segmentazione in sillabe con il battito delle mani, fusione di sillabe, riconoscimento della sillaba iniziale, riconoscimento del suono iniziale.
+Per ogni gioco: nome, materiali, svolgimento in sezione, durata, come renderlo più facile e più difficile.
+Inventa filastrocche originali da usare nei giochi di rima.`,
+tip:"Osserva chi fatica in modo persistente e annotalo: è un'informazione utile da condividere con le famiglie e la primaria."},
+
+{a:"Campi d'esperienza",l:["i"],t:"Numeri, ritmi e quantità",d:"Pensiero logico con il corpo e gli oggetti.",
+p:`Agisci come insegnante di scuola dell'infanzia esperta di avvio al pensiero matematico.
+Crea 8 attività per bambini di [ETÀ] anni su [ARGOMENTO: es. contare fino a 10, confrontare quantità, ritmi e sequenze, classificazioni].
+Usa oggetti della sezione e materiale naturale (castagne, foglie, tappi). Per ogni attività: obiettivo, svolgimento, domande da porre ai bambini, variante semplificata e variante sfidante.
+Aggiungi una canzoncina o una conta originale da usare come rituale.`,
+tip:"Lascia che i bambini spieghino come hanno fatto: verbalizzare la strategia conta più del risultato."},
+
+{a:"Scienze",l:["i"],t:"Piccoli esperimenti di esplorazione",d:"Ipotesi e scoperta già dai 3 anni.",
+p:`Agisci come insegnante di scuola dell'infanzia appassionata di scienze.
+Progetta un'esperienza scientifica su [FENOMENO: es. galleggia o affonda, la luce e l'ombra, i semi che germogliano] per bambini di [ETÀ] anni.
+Struttura in 4 momenti: domanda stimolo, previsioni dei bambini (come registrarle con simboli), esperimento, racconto di ciò che è successo.
+Elenca le domande aperte da porre, i materiali sicuri e un cartellone di documentazione da costruire con i bambini.`,
+tip:"Registra le previsioni con foto o disegni: anche chi non parla ancora bene l'italiano può partecipare."},
+
+{a:"Arte",l:["i"],t:"Entrare in un'opera d'arte con il corpo",d:"Osservazione, emozioni e laboratorio.",
+p:`Agisci come atelierista di scuola dell'infanzia.
+Progetta un'attività di avvicinamento all'opera [TITOLO E AUTORE] per bambini di [ETÀ] anni.
+Fasi: osservazione guidata con domande aperte («Cosa vedi? Cosa sta succedendo? Che suono avrebbe?»), gioco corporeo per imitare forme, colori o movimenti dell'opera, laboratorio con tecnica [TECNICA o lascia scegliere a te], restituzione al gruppo.
+Indica materiali, tempi e come rendere accessibile l'attività a un bambino con difficoltà visive o motorie.`,
+tip:"Le domande aperte non hanno risposte sbagliate: valorizza ogni lettura dell'opera."},
+
+{a:"Coding",l:["i"],t:"Coding unplugged sul pavimento",d:"Frecce, percorsi e primi algoritmi senza schermi.",
+p:`Agisci come esperto di coding per la scuola dell'infanzia.
+Crea 6 giochi di coding unplugged per bambini di [ETÀ] anni, dal più semplice al più complesso: robot umano, percorsi su reticolo a terra con frecce, sequenze di azioni, ricerca dell'errore nel percorso.
+Per ogni gioco: materiali (nastro adesivo, cartoncini), regole spiegate con parole da bambino, ruoli, variante con simboli per chi non conosce ancora le parole «destra» e «sinistra».`,
+tip:"Usa colori o simboli per destra e sinistra: è un aiuto per tutti, non solo per chi è in difficoltà."},
+
+/* ===== TESTI LIVELLATI ===== */
+{a:"Testi livellati",l:["p","s"],t:"Lo stesso testo in tre livelli",d:"Tutta la classe lavora sugli stessi contenuti.",
+p:`Agisci come esperto di leggibilità e semplificazione dei testi.
+Riscrivi il seguente testo di [DISCIPLINA] per [CLASSE] in tre versioni con gli stessi contenuti fondamentali:
+[INCOLLA IL TESTO o scrivi: «Crea tu un testo su ARGOMENTO»]
+- Versione A (alta accessibilità): frasi di massimo 12 parole, una informazione per frase, lessico di base, parole difficili spiegate tra parentesi, titoletti ogni 3-4 frasi
+- Versione B (standard): testo adatto all'età
+- Versione C (approfondimento): lessico specifico, una curiosità in più, una domanda che stimoli il ragionamento
+Per tutte e tre: stesse 5 parole chiave in grassetto, stesse 3 domande di comprensione finali, così da poter discutere insieme in classe.`,
+tip:"Distribuisci le versioni senza annunciare il livello: le domande comuni permettono a tutti di intervenire nella discussione."},
+
+{a:"Testi livellati",l:["p","s"],t:"Testo ad alta leggibilità con mappa",d:"Per chi ha difficoltà di decodifica o di memoria di lavoro.",
+p:`Agisci come docente esperto di DSA.
+Trasforma questo contenuto su [ARGOMENTO] per [CLASSE] in un materiale di studio accessibile:
+[INCOLLA IL TESTO]
+Produci:
+1. testo ad alta leggibilità: paragrafi brevi con titolo-domanda, elenchi puntati, parole chiave evidenziate
+2. una mappa concettuale in forma testuale (nodo centrale, rami, collegamenti con verbi) che io possa ridisegnare
+3. un glossario di 8 termini con definizione in una riga
+4. 5 domande guida per lo studio e la ripetizione orale
+5. un riassunto in 5 righe da ascoltare con la sintesi vocale.`,
+tip:"Chiedi all'alunno di completare la mappa invece di consegnarla finita: costruirla aiuta la memorizzazione."},
+
+/* ===== ORTOGRAFIA ===== */
+{a:"Ortografia",l:["p"],t:"Scoprire una regola ortografica",d:"Dalla scoperta induttiva all'automatizzazione.",
+p:`Agisci come insegnante esperta di didattica dell'italiano nella scuola primaria.
+Progetta un percorso di [N] lezioni sulla difficoltà ortografica [REGOLA: es. CU/QU/CQU, uso dell'H nel verbo avere, GN/NI, doppie, accento, apostrofo] per la classe [CLASSE].
+1. Fase di scoperta: un elenco di parole da osservare e domande che portino i bambini a formulare la regola da soli
+2. Una filastrocca originale o un personaggio che aiuti a ricordare la regola
+3. Esercizi graduati in 4 livelli: riconoscimento, completamento, scelta tra due forme, produzione di frasi
+4. Un gioco di classe (a squadre o di movimento)
+5. Un dettato breve con autocorrezione guidata
+Indica per ogni fase un supporto visivo per gli alunni con difficoltà ortografiche.`,
+tip:"Per i bambini con disortografia la regola va resa visibile (cartellone, segnalibro) e sempre consultabile."},
+
+{a:"Ortografia",l:["p","s"],t:"Analisi degli errori ricorrenti",d:"Esercizi mirati sugli errori reali della classe.",
+p:`Agisci come esperto di didattica dell'ortografia.
+Ecco alcuni errori ricorrenti raccolti nei testi della mia [CLASSE], senza riferimenti agli alunni:
+[ELENCO DI ERRORI: es. «a fatto», «squola», «lalbero», «perche»]
+1. Raggruppa gli errori per tipo (fonologici, non fonologici, accenti e doppie) spiegando la causa probabile
+2. Per ogni gruppo proponi una mini-lezione di 10 minuti e 2 esercizi mirati
+3. Crea una scheda di autocorrezione che gli alunni possano usare quando rileggono i propri testi
+4. Suggerisci strategie compensative (es. correttore ortografico, tabelle) per chi ha difficoltà persistenti.`,
+tip:"Lavora su un tipo di errore alla volta: correggere tutto insieme scoraggia."},
+
+/* ===== SCRITTURA ===== */
+{a:"Scrittura",l:["p","s"],t:"Scrivere un testo narrativo passo passo",d:"Impalcature che si tolgono man mano.",
+p:`Agisci come docente esperto di didattica della scrittura (laboratorio di scrittura).
+Progetta un percorso per insegnare a scrivere un [TIPO DI TESTO: es. racconto fantastico, racconto d'avventura, diario] a [CLASSE].
+Includi:
+1. un testo modello originale con le parti evidenziate (situazione iniziale, problema, sviluppo, conclusione)
+2. uno schema da compilare per pianificare
+3. una banca di parole e connettivi divisa per funzione
+4. tre incipit diversi tra cui scegliere
+5. una checklist di revisione con 6 voci in forma di domanda
+6. tre livelli di sostegno: scrittura guidata con frasi da completare, scrittura con schema, scrittura libera
+7. un'alternativa per chi ha grandi difficoltà di scrittura (racconto orale registrato, storyboard a fumetti).`,
+tip:"Separa le fasi: prima idee, poi bozza, poi revisione. Chi si blocca davanti al foglio bianco spesso ha bisogno solo di pianificare prima."},
+
+{a:"Scrittura",l:["s"],t:"Testo argomentativo",d:"Tesi, argomenti, antitesi e confutazione.",
+p:`Agisci come docente di italiano della secondaria di primo grado.
+Crea una lezione sul testo argomentativo per la classe [CLASSE] partendo dalla domanda «[TEMA VICINO AI RAGAZZI: es. i compiti per casa andrebbero aboliti?]».
+- spiegazione chiara della struttura con un esempio originale
+- una tabella organizzatore da compilare (tesi, 3 argomenti con prove, antitesi, confutazione, conclusione)
+- un dibattito strutturato in classe con ruoli
+- una lista di connettivi argomentativi
+- attività differenziate: completamento di un testo già impostato, scrittura guidata, scrittura autonoma con contro-argomenti
+- griglia di valutazione.`,
+tip:"Il dibattito orale prima della scrittura permette a chi ha difficoltà a scrivere di mostrare il proprio ragionamento."},
+
+{a:"Scrittura",l:["p","s"],t:"Feedback formativo su un testo",d:"Commenti che aiutano a migliorare.",
+p:`Agisci come docente esperto di valutazione formativa.
+Ecco un testo scritto da un alunno di [CLASSE] (anonimo):
+[INCOLLA IL TESTO]
+Dai un feedback strutturato così:
+1. due punti di forza specifici, citando il testo
+2. un solo aspetto da migliorare per volta, il più importante
+3. un esempio concreto di come riscrivere una frase
+4. una domanda che inviti l'alunno a rivedere da solo
+Usa un tono incoraggiante e un linguaggio adatto a un ragazzo di [ETÀ] anni. Non riscrivere tutto il testo.`,
+tip:"Il feedback finale lo scrivi tu: usa questa proposta come bozza e personalizzala."},
+
+/* ===== POESIA E LETTERATURA ===== */
+{a:"Poesia e letteratura",l:["p","s"],t:"Analizzare e comprendere una poesia",d:"Dal suono alle immagini al significato.",
+p:`Agisci come docente di italiano esperto di educazione alla lettura poetica.
+Ecco la poesia [TITOLO E AUTORE] (incolla il testo): [TESTO]
+Prepara un percorso di analisi per [CLASSE] in quattro passaggi:
+1. Ascolto: come leggerla ad alta voce, cosa far notare del ritmo e dei suoni
+2. Immagini: domande per individuare cosa si vede, si sente, si tocca
+3. Emozioni: domande sul punto di vista e sullo stato d'animo
+4. Significato: parafrasi guidata verso per verso e messaggio
+Poi aggiungi: le figure retoriche presenti spiegate con esempi semplici, un glossario delle parole difficili, un'attività creativa (riscrittura, disegno, poesia su modello) e domande differenziate su tre livelli: letterale, inferenziale, personale.`,
+tip:"Per chi fatica nella lettura, fai ascoltare la poesia registrata prima di consegnare il testo scritto."},
+
+{a:"Poesia e letteratura",l:["p","s"],t:"Comprensione di un brano letterario a tre livelli",d:"Domande che vanno dal testo al ragionamento.",
+p:`Agisci come esperto di didattica della comprensione del testo.
+Per il brano [TITOLO, AUTORE] (incolla il testo): [TESTO]
+per la classe [CLASSE], prepara:
+- 3 attività prima della lettura per attivare le conoscenze
+- domande di comprensione letterale (informazioni esplicite), inferenziale (deduzioni), valutativa (opinione motivata), 4 per tipo
+- una scheda sui personaggi (aspetto, carattere, azioni che lo dimostrano)
+- una sequenza delle parti del racconto da riordinare
+- una versione delle domande a scelta multipla per chi ha bisogno di più supporto
+- un'attività di scrittura creativa collegata (finale alternativo, lettera a un personaggio, cambio di narratore).`,
+tip:"Le domande inferenziali sono le più importanti da allenare: mostra tu ad alta voce come si arriva alla risposta."},
+
+{a:"Poesia e letteratura",l:["s"],t:"Intervista impossibile a un autore",d:"Contesto storico e opera in forma di dialogo.",
+p:`Agisci come docente di letteratura della secondaria di primo grado.
+Crea un'attività di «intervista impossibile» a [AUTORE: es. Dante, Manzoni, Leopardi, Pascoli] per la classe [CLASSE].
+- scheda informativa sull'autore e sul suo tempo in 10 righe semplici
+- 8 domande che gli alunni potrebbero porre, con indicazioni su dove trovare le risposte nelle opere
+- un esempio di risposta in prima persona, chiaramente segnalato come ricostruzione e non come citazione
+- organizzazione in coppie (intervistatore e autore) e criteri per la presentazione alla classe
+- collegamento con un testo dell'autore da leggere insieme.`,
+tip:"Il gioco di ruolo coinvolge anche chi non ama lo studio sui libri; il ruolo dell'intervistatore richiede meno preparazione ed è adatto a chi è più in difficoltà."},
+
+/* ===== STORIA ===== */
+{a:"Storia",l:["p","s"],t:"Lezione con linea del tempo e fonti",d:"Lo storico lavora con le fonti: anche gli alunni.",
+p:`Agisci come docente di storia esperto di didattica laboratoriale.
+Progetta una lezione su [PERIODO O EVENTO] per [CLASSE].
+- una linea del tempo con 6-8 date essenziali, descritta in modo da poterla disegnare
+- 3 fonti di tipo diverso (materiale, iconografica, scritta) descritte con indicazioni su dove trovarle e domande per analizzarle (chi l'ha prodotta, quando, cosa ci racconta)
+- un testo narrativo breve che racconti l'evento
+- una tabella causa-conseguenza
+- domande guida per lo studio e l'esposizione orale
+- versione con testo semplificato e mappa per alunni con DSA o con italiano L2.`,
+tip:"Rileggi sempre date e fatti storici generati dall'IA confrontandoli con il libro di testo."},
+
+{a:"Storia",l:["p","s"],t:"Raccontare la storia da dentro",d:"Un coetaneo del passato racconta la sua giornata.",
+p:`Agisci come scrittore per ragazzi e docente di storia.
+Scrivi il racconto di una giornata di un ragazzo o una ragazza di [ETÀ] anni vissuto in [EPOCA E LUOGO: es. Roma antica, un castello medievale, una fabbrica dell'Ottocento].
+Il racconto deve contenere in modo naturale informazioni storiche corrette su: abitazione, cibo, lavoro, scuola o educazione, giochi, società.
+Lunghezza: [N] parole. Dopo il racconto:
+- 6 domande per far scoprire le informazioni storiche nascoste nel testo
+- un confronto ieri/oggi in tabella
+- un'attività creativa (diario, cartolina, fumetto).`,
+tip:"Fai individuare agli alunni le informazioni storiche con evidenziatori di colori diversi: rende visibile il lavoro di comprensione."},
+
+{a:"Storia",l:["s"],t:"Studiare un periodo con mappe e domande",d:"Metodo di studio per la storia.",
+p:`Agisci come tutor di metodo di studio.
+Per il capitolo su [ARGOMENTO] (incolla il testo del libro o un riassunto: [TESTO]), per la classe [CLASSE], prepara:
+1. 5 domande-titolo da scrivere prima di leggere
+2. una mappa concettuale organizzata per: dove, quando, chi, cosa, perché, conseguenze
+3. 10 flashcard domanda/risposta
+4. un quiz di 8 domande con soluzioni
+5. una scaletta per l'interrogazione orale con frasi di avvio («Il periodo che ho studiato…», «La causa principale fu…»).`,
+tip:"Le frasi di avvio sono un supporto molto efficace per chi ha difficoltà espressive o ansia da interrogazione."},
+
+/* ===== GEOGRAFIA ===== */
+{a:"Geografia",l:["p","s"],t:"Viaggio virtuale in un territorio",d:"Paesaggi, clima, popolazione ed economia attraverso un itinerario.",
+p:`Agisci come docente di geografia esperto di didattica attiva.
+Progetta un «viaggio» di [N] tappe in [REGIONE / STATO / CONTINENTE] per la classe [CLASSE].
+Per ogni tappa: luogo, paesaggio (descritto per poterlo cercare su una mappa o in foto), clima, attività umane, una curiosità, una domanda di osservazione.
+Aggiungi:
+- una carta muta da completare (descrivi quali elementi segnare)
+- un diario di viaggio da compilare
+- un lessico geografico con 10 termini
+- un confronto tra il territorio studiato e quello in cui vivono gli alunni
+- un'attività per valorizzare gli alunni che hanno origini in altri Paesi.`,
+tip:"Usa mappe digitali e immagini satellitari per chi ha difficoltà con la lettura delle carte tradizionali."},
+
+{a:"Geografia",l:["p","s"],t:"Un problema reale del territorio",d:"Geografia e cittadinanza, con riferimento all'Agenda 2030.",
+p:`Agisci come docente di geografia e di educazione civica.
+Crea un'attività di problem solving per [CLASSE] sul problema «[PROBLEMA: es. dove realizzare una nuova area verde nel quartiere, come ridurre il traffico davanti alla scuola, come gestire l'acqua in un periodo di siccità]».
+- presentazione del problema con dati semplici e plausibili, indicati come esempi
+- collegamento con uno degli obiettivi dell'Agenda 2030
+- lavoro in gruppi con ruoli (urbanista, ambientalista, cittadino, amministratore)
+- una mappa da analizzare
+- presentazione delle proposte e votazione finale motivata
+- griglia di valutazione.`,
+tip:"Se possibile, usa dati reali del tuo comune: rende il compito autentico."},
+
+/* ===== SCIENZE ===== */
+{a:"Scienze",l:["p","s"],t:"Esperimento con il metodo scientifico",d:"Domanda, ipotesi, prova, conclusione.",
+p:`Agisci come docente di scienze esperto di didattica laboratoriale (IBSE, apprendimento basato sull'indagine).
+Progetta un'attività sperimentale su [FENOMENO: es. la germinazione, la dissoluzione, la conduzione del calore, la densità] per [CLASSE].
+- domanda di partenza che susciti curiosità
+- materiali poveri e sicuri
+- procedura in passaggi numerati con un'immagine descritta per ciascun passaggio
+- scheda di laboratorio: ipotesi, osservazioni, tabella dati, conclusione
+- spiegazione scientifica in due livelli di complessità
+- ruoli nel gruppo e regole di sicurezza
+- domande per collegare l'esperimento alla vita quotidiana.`,
+tip:"La scheda con immagini per ogni passaggio permette agli alunni con difficoltà di lettura di lavorare in autonomia."},
+
+{a:"Scienze",l:["p","s"],t:"Spiegare un concetto difficile con analogie",d:"Intercettare anche le idee sbagliate.",
+p:`Agisci come divulgatore scientifico e docente di scienze.
+Spiega [CONCETTO: es. la fotosintesi, la cellula, il ciclo dell'acqua, la digestione, le forze] per la classe [CLASSE]:
+1. una spiegazione in 5 frasi semplici
+2. due analogie con la vita quotidiana, indicando dove l'analogia non funziona
+3. le 3 misconcezioni più comuni degli alunni su questo tema e come correggerle
+4. uno schema da disegnare alla lavagna
+5. un'attività pratica o una simulazione con il corpo
+6. 5 domande per verificare la comprensione, di difficoltà crescente.`,
+tip:"Inizia chiedendo agli alunni cosa ne pensano: le idee sbagliate vanno fatte emergere prima di spiegare."},
+
+/* ===== MATEMATICA ===== */
+{a:"Matematica",l:["p"],t:"Frazioni con materiali concreti",d:"Dal concreto al simbolico.",
+p:`Agisci come insegnante di matematica della primaria esperta di didattica laboratoriale.
+Progetta un percorso su [ARGOMENTO: es. frazioni, valore posizionale, divisione, numeri decimali] per la classe [CLASSE] seguendo la progressione concreto, rappresentazione grafica, simbolo.
+- attività con materiali (carta da piegare, cibo, regoli, abaco)
+- schede con rappresentazioni grafiche
+- esercizi simbolici graduati
+- gli errori più frequenti dei bambini su questo tema e come intervenire
+- un gioco di classe
+- versione con meno passaggi per chi ha bisogno di più tempo e una sfida per chi finisce prima.`,
+tip:"Lascia i materiali concreti a disposizione anche durante gli esercizi simbolici: non è «barare»."},
+
+{a:"Matematica",l:["p","s"],t:"Risolvere problemi con una strategia",d:"Capire il testo prima di calcolare.",
+p:`Agisci come esperto di didattica della matematica e di problem solving.
+Crea un percorso per insegnare alla classe [CLASSE] a risolvere problemi di [TIPO: es. compravendita, misure, percentuali, geometria].
+1. una strategia in 5 passaggi con un nome facile da ricordare (leggo, capisco, rappresento, risolvo, controllo)
+2. un problema svolto ad alta voce, con il ragionamento esplicitato
+3. 9 problemi in tre livelli: con dati evidenziati e schema già impostato, con schema da completare, senza aiuti
+4. 2 problemi con dati mancanti o superflui da individuare
+5. problemi ambientati in situazioni reali e vicine agli alunni
+6. una scheda di controllo finale («La risposta ha senso?»).`,
+tip:"Per gli alunni con discalculia consenti tabelle e calcolatrice: l'obiettivo è il ragionamento, non il calcolo."},
+
+{a:"Matematica",l:["s"],t:"Capire un teorema (es. Pitagora)",d:"Visualizzare, manipolare, dimostrare.",
+p:`Agisci come docente di matematica esperto di didattica laboratoriale.
+Progetta una lezione sul [TEOREMA: es. teorema di Pitagora, teoremi di Euclide, somma degli angoli interni di un triangolo] per [CLASSE].
+1. un problema o una situazione storica che motivi la scoperta
+2. un'attività manipolativa (ritaglio di quadrati, puzzle, GeoGebra) che permetta di scoprirlo
+3. l'enunciato in linguaggio comune e in linguaggio matematico
+4. una dimostrazione visiva spiegata passo per passo
+5. esempi svolti con il ragionamento esplicito
+6. esercizi graduati in tre livelli, compresi problemi realistici
+7. un formulario illustrato da usare come strumento compensativo
+8. gli errori tipici e come riconoscerli.`,
+tip:"Fai costruire il formulario agli alunni stessi: diventa uno strumento di studio, non solo un supporto."},
+
+{a:"Matematica",l:["p","s"],t:"Esercizi svolti con aiuti a scalare",d:"Esempi completi che lasciano spazio a poco a poco.",
+p:`Agisci come esperto di didattica della matematica.
+Sull'argomento [ARGOMENTO] per [CLASSE], crea una sequenza di 6 esercizi con aiuti che diminuiscono:
+- esercizio 1: completamente svolto, con il motivo di ogni passaggio
+- esercizi 2-3: svolti a metà, l'alunno completa
+- esercizi 4-5: solo il primo passaggio è indicato
+- esercizio 6: autonomo
+Fornisci le soluzioni commentate in una sezione separata e una domanda di riflessione finale («Qual è il passaggio in cui hai avuto più dubbi?»).`,
+tip:"Molto utile come compito a casa: l'alunno trova da solo l'aiuto di cui ha bisogno."},
+
+/* ===== EQUAZIONI ===== */
+{a:"Equazioni",l:["s"],t:"Equazioni di primo grado con la bilancia",d:"Il principio di equivalenza reso visibile.",
+p:`Agisci come docente di matematica della secondaria di primo grado.
+Progetta un percorso per insegnare a risolvere le equazioni di primo grado alla classe [CLASSE].
+1. introduzione con il modello della bilancia a due piatti (descrivi come realizzarla con oggetti o con un'app)
+2. i principi di equivalenza spiegati con la bilancia e poi con i simboli
+3. una procedura in passaggi numerati, scritta come scheda da tenere sul banco
+4. 4 esempi svolti di difficoltà crescente (con parentesi, con frazioni)
+5. 12 esercizi in tre livelli con soluzioni
+6. gli errori più comuni (es. cambio di segno, frazioni) e una scheda «trova l'errore»
+7. 3 problemi da tradurre in equazione, con aiuti per impostarli.`,
+tip:"La scheda della procedura è uno strumento compensativo utile per tutti nelle prime settimane."},
+
+{a:"Equazioni",l:["s"],t:"Trova l'errore",d:"Analizzare errori altrui per non ripeterli.",
+p:`Agisci come docente di matematica.
+Crea 8 equazioni di [TIPO: es. primo grado con parentesi, con frazioni] risolte da un alunno immaginario, ciascuna con un errore tipico in un passaggio diverso.
+Per ognuna: lo svolgimento con l'errore, una domanda che guidi a trovarlo, la correzione spiegata.
+Ordina dal più facile al più difficile e aggiungi un'attività in coppia in cui ciascuno crea un esercizio con un errore per il compagno.`,
+tip:"Lavorare su errori di un alunno immaginario riduce l'ansia di sbagliare."},
+
+/* ===== GEOMETRIA ===== */
+{a:"Geometria",l:["p"],t:"Perimetro e area da esplorare",d:"Misurare prima di applicare formule.",
+p:`Agisci come insegnante di matematica della primaria.
+Progetta un percorso su [ARGOMENTO: es. perimetro e area, figure piane, angoli, simmetrie] per [CLASSE].
+- attività con geopiano, quadretti, cordicelle o pavimento dell'aula
+- scoperta guidata delle formule attraverso domande
+- schede con figure da costruire, misurare e confrontare
+- una caccia alle forme a scuola o in giardino
+- esercizi graduati e problemi concreti (es. recinto dell'orto, pavimento della classe)
+- supporti per alunni con difficoltà visuo-spaziali.`,
+tip:"Per chi ha difficoltà visuo-spaziali usa figure in rilievo e colori diversi per i lati."},
+
+{a:"Geometria",l:["s"],t:"Figure solide e calcolo di superfici e volumi",d:"Dallo sviluppo piano al solido.",
+p:`Agisci come docente di matematica della secondaria di primo grado.
+Progetta una lezione su [SOLIDO: es. prisma, cilindro, piramide, cono] per [CLASSE].
+- costruzione del solido a partire dallo sviluppo piano (descrivi come disegnarlo e ritagliarlo)
+- deduzione delle formule di superficie e volume
+- formulario illustrato
+- esercizi in tre livelli e due problemi realistici (es. quanta vernice serve, quanta acqua contiene)
+- un'attività con GeoGebra 3D.`,
+tip:"Toccare e costruire i solidi aiuta in particolare chi ha difficoltà di astrazione."},
+
+/* ===== ARTE ===== */
+{a:"Arte",l:["p","s"],t:"Interpretare un'opera d'arte",d:"Osservare prima di spiegare.",
+p:`Agisci come docente di arte e immagine esperto di educazione al patrimonio.
+Progetta una lezione sull'opera [TITOLO, AUTORE, ANNO] per la classe [CLASSE] in quattro fasi:
+1. Osservazione: domande aperte (Cosa sta succedendo? Cosa te lo fa dire? Cos'altro noti?) secondo il metodo Visual Thinking Strategies
+2. Descrizione guidata: soggetto, composizione, colori, luce, linee, punto di vista
+3. Interpretazione: emozioni, significato, simboli
+4. Contesto: autore, periodo, corrente artistica in parole semplici
+Aggiungi una scheda di lettura dell'opera da compilare, un lessico specifico con 10 termini, un'attività creativa ispirata all'opera e un adattamento per alunni con disabilità visiva (descrizione verbale dettagliata, riproduzione tattile).`,
+tip:"Nella fase di osservazione non correggere: ogni risposta motivata con ciò che si vede è valida."},
+
+{a:"Arte",l:["p","s"],t:"Confrontare due opere",d:"Somiglianze e differenze tra epoche e stili.",
+p:`Agisci come docente di arte e immagine.
+Per la classe [CLASSE], crea un'attività di confronto tra [OPERA 1] e [OPERA 2] sullo stesso tema [TEMA: es. il ritratto, il paesaggio, la maternità].
+- tabella di confronto con criteri (soggetto, tecnica, colori, composizione, emozioni, contesto)
+- domande guida
+- un laboratorio pratico in cui gli alunni realizzano un'opera sul tema scegliendo lo stile di uno dei due artisti
+- criteri di valutazione del processo creativo, non solo del risultato.`,
+tip:"Valuta l'impegno e le scelte espressive: tutti possono riuscire, a prescindere dall'abilità grafica."},
+
+/* ===== TECNOLOGIA ===== */
+{a:"Tecnologia",l:["p","s"],t:"Materiali e ciclo di vita di un oggetto",d:"Dalla materia prima al riciclo.",
+p:`Agisci come docente di tecnologia.
+Progetta una lezione su [MATERIALE O OGGETTO: es. la carta, la plastica, il vetro, una bottiglia, uno smartphone] per [CLASSE].
+- ciclo di vita completo (materia prima, lavorazione, uso, smaltimento, riciclo) in forma di diagramma da disegnare
+- proprietà del materiale da scoprire con piccole prove pratiche
+- impatto ambientale con dati presentati come esempi da verificare
+- attività di gruppo: progettare un oggetto con materiali di recupero
+- testo semplificato e mappa per alunni con DSA
+- 6 domande di verifica.`,
+tip:"Le prove pratiche sulle proprietà dei materiali coinvolgono anche chi fatica sul libro."},
+
+{a:"Tecnologia",l:["s"],t:"Disegno tecnico guidato",d:"Proiezioni ortogonali e assonometrie passo per passo.",
+p:`Agisci come docente di tecnologia della secondaria di primo grado.
+Crea una guida per eseguire [COSTRUZIONE: es. proiezioni ortogonali di un solido, assonometria isometrica, costruzione di poligoni regolari] per la classe [CLASSE].
+- elenco degli strumenti
+- procedura in passaggi numerati, uno per riga, con indicazioni precise (dove puntare il compasso, quale linea tracciare)
+- errori frequenti
+- esercizi in tre livelli
+- adattamenti per alunni con difficoltà grafo-motorie (fogli con griglia, software di disegno, tempo aggiuntivo)
+- griglia di valutazione.`,
+tip:"Proietta la costruzione alla LIM un passaggio alla volta, aspettando che tutti lo abbiano completato."},
+
+{a:"Tecnologia",l:["p","s"],t:"Progettare una soluzione (design thinking)",d:"Un problema reale, un prototipo.",
+p:`Agisci come esperto di didattica STEM e design thinking.
+Progetta un'attività per [CLASSE] in cui gli alunni risolvono il problema «[PROBLEMA: es. lo zaino è troppo pesante, la classe è troppo rumorosa, gli spazi in cortile sono poco usati]».
+Fasi: capire il problema (interviste), definire, generare idee, costruire un prototipo con materiali semplici, testare e migliorare.
+Per ogni fase: tempi, attività, strumenti e una scheda di documentazione.
+Indica ruoli nel gruppo che valorizzino abilità diverse (manuali, grafiche, comunicative, organizzative).`,
+tip:"Il prototipo può essere un disegno, un modello o una simulazione: lascia scegliere la forma."},
+
+/* ===== CODING ===== */
+{a:"Coding",l:["p"],t:"Coding unplugged in classe",d:"Algoritmi, sequenze e cicli senza computer.",
+p:`Agisci come esperto di pensiero computazionale per la scuola primaria.
+Crea 5 attività di coding unplugged per [CLASSE] su [CONCETTO: es. sequenze, cicli, condizioni, debugging].
+Esempi di formati: pixel art su quadretti con istruzioni codificate, percorsi sul reticolo, «robot umano», ricette come algoritmi.
+Per ogni attività: obiettivo, materiali, regole, un esempio risolto, tre livelli di difficoltà e una domanda per collegare l'attività alla vita quotidiana.`,
+tip:"Lavorare in coppia programmatore-robot aiuta chi ha bisogno di vedere e muovere per capire."},
+
+{a:"Coding",l:["p","s"],t:"Progetto guidato con Scratch",d:"Dal primo blocco a un gioco o una storia animata.",
+p:`Agisci come docente esperto di coding con Scratch.
+Progetta un progetto Scratch per [CLASSE]: [TIPO: es. una storia animata su un argomento di storia, un quiz di geografia, un gioco con punteggio].
+- descrizione del risultato finale
+- passaggi numerati con i blocchi da usare (nome del blocco e categoria) e il motivo di ciascuno
+- concetti di programmazione coinvolti (sequenza, ciclo, condizione, variabile, evento)
+- 3 sfide aggiuntive per chi finisce prima
+- versione semplificata per chi è alle prime armi
+- una scheda di debugging: «Cosa mi aspettavo? Cosa succede? Cosa provo a cambiare?»
+- collegamento con una disciplina del curricolo.`,
+tip:"Collegare il progetto a un'altra disciplina permette di ripassare i contenuti mentre si programma."},
+
+{a:"Coding",l:["s"],t:"Python o micro:bit per principianti",d:"Primi programmi testuali e fisici.",
+p:`Agisci come docente di tecnologia esperto di programmazione per ragazzi.
+Crea una lezione introduttiva su [STRUMENTO: es. Python, micro:bit con MakeCode, Arduino simulato] per [CLASSE].
+- un obiettivo concreto e motivante (es. termometro, dado elettronico, gioco indovina il numero)
+- codice commentato riga per riga in linguaggio semplice
+- esercizi progressivi: modificare un valore, aggiungere una condizione, creare una variante
+- gli errori più comuni dei principianti e come leggerli
+- una sfida finale aperta
+- adattamenti per chi non ha mai programmato e per chi è già esperto.`,
+tip:"Programmare in coppia (uno scrive, l'altro controlla, poi si scambiano) riduce il blocco e aiuta chi ha meno esperienza."},
+
+/* ===== METODO DI STUDIO ===== */
+{a:"Metodo di studio",l:["p","s"],t:"Diario metacognitivo e autovalutazione",d:"Imparare a riconoscere come si impara.",
+p:`Agisci come esperto di didattica metacognitiva.
+Crea per la classe [CLASSE] un diario di apprendimento da usare durante l'unità su [ARGOMENTO].
+- domande di inizio unità («Cosa so già? Cosa vorrei sapere?»)
+- una scheda settimanale con 4 domande brevi («Cosa ho imparato? Cosa mi ha aiutato? Dove mi sono bloccato? Cosa faccio la prossima volta?»)
+- una scala di fiducia da 1 a 4 con simboli
+- strategie di studio tra cui scegliere (mappa, ripetizione ad alta voce, flashcard, spiegare a un compagno, disegnare)
+- una versione con frasi da completare per chi ha difficoltà di scrittura.`,
+tip:"Dedica 5 minuti fissi alla fine della lezione: la regolarità è ciò che rende utile il diario."}
+];
+
+const BOOST = [
+ ["Semplifica","Riscrivi il materiale per un alunno con difficoltà di lettura: frasi più brevi, lessico più semplice, stessi contenuti."],
+ ["Rendi più sfidante","Crea una versione di approfondimento per alunni che hanno già raggiunto l'obiettivo, con problemi aperti e collegamenti interdisciplinari."],
+ ["Trasforma in tabella","Riorganizza tutto in una tabella con colonne: fase, tempi, attività docente, attività alunni, materiali, adattamenti."],
+ ["Aggiungi una versione con simboli","Per ogni frase della consegna indica un simbolo o un'immagine da affiancare, adatto a un alunno che usa la Comunicazione Aumentativa Alternativa."],
+ ["Crea la verifica","Sulla base di questa lezione crea una verifica con 10 domande di tipo diverso, le soluzioni e una versione con misure compensative."],
+ ["Prepara la lezione al minuto","Trasforma la proposta in una lezione di [N] minuti con la scansione dei tempi e le frasi che posso dire per introdurre ogni momento."],
+ ["Gioco di ripasso","Crea un gioco a squadre per ripassare questi contenuti in 20 minuti, con regole chiare e domande di tre livelli."],
+ ["Coinvolgi le famiglie","Scrivi un breve messaggio per le famiglie che spieghi l'attività e suggerisca un modo semplice per sostenerla a casa."],
+ ["Traduci la consegna","Traduci la consegna dell'attività in [LINGUA], in forma semplice, per un alunno neoarrivato e per la sua famiglia."],
+ ["Controlla il lavoro","Rileggi il materiale che hai prodotto e segnalami eventuali errori di contenuto, date o calcoli da verificare."]
+];
+
+const LV = {i:"Infanzia",p:"Primaria",s:"Secondaria"};
+const areas = [...new Set(P.map(x=>x.a))];
+let fLv="all", fArea="all", fQ="";
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function hl(s){return esc(s).replace(/\[[^\]]+\]/g,m=>'<span class="ph">'+m+'</span>')}
+
+async function copyText(txt,btn,label){
+  let ok=false;
+  try{await navigator.clipboard.writeText(txt);ok=true}catch(e){
+    try{const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(e2){}
+  }
+  btn.textContent = ok ? "Copiato ✓" : "Seleziona e copia a mano";
+  if(ok) btn.classList.add("done");
+  setTimeout(()=>{btn.textContent=label;btn.classList.remove("done")},1800);
+}
+
+function stats(){
+  const c=k=>P.filter(x=>x.l.includes(k)).length;
+  document.getElementById("stats").innerHTML =
+   `<span class="stat"><span class="dot t"></span><b>${P.length}</b> prompt</span>`+
+   `<span class="stat"><span class="dot i"></span><b>${c("i")}</b> Infanzia</span>`+
+   `<span class="stat"><span class="dot p"></span><b>${c("p")}</b> Primaria</span>`+
+   `<span class="stat"><span class="dot s"></span><b>${c("s")}</b> Secondaria I grado</span>`+
+   `<span class="stat"><span class="dot t" style="background:var(--muted)"></span><b>${areas.length}</b> aree</span>`;
+}
+
+function buildAreas(){
+  const box=document.getElementById("areas");
+  const mk=(v,t)=>{const b=document.createElement("button");b.className="chip";b.dataset.area=v;b.textContent=t;b.setAttribute("aria-pressed",v==="all");b.onclick=()=>{fArea=v;box.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.area===v));render()};box.appendChild(b)};
+  mk("all","Tutte");areas.forEach(a=>mk(a,a));
+}
+
+function render(){
+  const q=fQ.trim().toLowerCase();
+  const rows=P.map((x,i)=>({...x,n:i+1})).filter(x=>
+    (fLv==="all"||x.l.includes(fLv)) && (fArea==="all"||x.a===fArea) &&
+    (!q || (x.a+" "+x.t+" "+x.d+" "+x.p+" "+x.tip).toLowerCase().includes(q)));
+  const tb=document.getElementById("tb");
+  tb.innerHTML=rows.map(x=>`<tr>
+    <td class="num">${String(x.n).padStart(2,"0")}</td>
+    <td class="area"><span class="areaname">${esc(x.a)}</span><div class="levels">${x.l.map(k=>`<span class="lv ${k}">${LV[k]}</span>`).join("")}</div></td>
+    <td class="goal"><h3>${esc(x.t)}</h3><p>${esc(x.d)}</p></td>
+    <td><div class="promptbox" id="pb${x.n}">${hl(x.p)}</div><button class="copy" data-n="${x.n}">Copia prompt</button></td>
+    <td class="tip"><span class="t">Suggerimento</span>${esc(x.tip)}</td></tr>`).join("");
+  tb.querySelectorAll(".copy").forEach(b=>b.onclick=()=>copyText(P[b.dataset.n-1].p,b,"Copia prompt"));
+  document.getElementById("count").textContent = rows.length+" di "+P.length+" prompt";
+  document.getElementById("empty").hidden = rows.length>0;
+}
+
+function buildBoost(){
+  const g=document.getElementById("boost");
+  g.innerHTML=BOOST.map((b,i)=>`<div class="bcard"><b>${esc(b[0])}</b><span>${hl(b[1])}</span><button class="copy" data-b="${i}">Copia</button></div>`).join("");
+  g.querySelectorAll(".copy").forEach(b=>b.onclick=()=>copyText(BOOST[b.dataset.b][1],b,"Copia"));
+}
+
+document.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{fLv=b.dataset.lv;document.querySelectorAll("[data-lv]").forEach(c=>c.setAttribute("aria-pressed",c===b));render()});
+document.getElementById("q").addEventListener("input",e=>{fQ=e.target.value;render()});
+stats();buildAreas();buildBoost();render();
+</script>
+</body>
+</html>
